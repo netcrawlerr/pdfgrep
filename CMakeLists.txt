@@ -10,7 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(POPPLER_CPP REQUIRED IMPORTED_TARGET poppler-cpp)
+
+pkg_check_modules(
+    POPPLER_CPP
+    REQUIRED
+    IMPORTED_TARGET
+    poppler-cpp
+)
 
 add_executable(pdfgrep
     src/main.cpp
@@ -35,4 +41,15 @@ target_compile_options(pdfgrep
         -Wall
         -Wextra
         -Wpedantic
+)
+
+# ---------------------------------------------------------------------------
+# Installation
+# ---------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
+install(
+    TARGETS pdfgrep
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
