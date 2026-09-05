@@ -3,6 +3,7 @@
 #include <iostream>
 
 std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
+  // Guard clause: Display help text if no arguments were provided.
   if (argc < 2) {
     printHelp();
     return std::nullopt;
@@ -10,9 +11,11 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
 
   CliOptions options;
 
+  // Process arguments sequentially, skipping executable name at index 0.
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
 
+    // Early exit flags - return immediately once matched.
     if (arg == "-h" || arg == "--help") {
       options.showHelp = true;
       return options;
@@ -23,6 +26,7 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
       return options;
     }
 
+    // Standard boolean toggle flags.
     if (arg == "-i" || arg == "--ignore-case") {
       options.caseInsensitive = true;
       continue;
@@ -38,6 +42,7 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
       continue;
     }
 
+    // Option expecting an integer value in the next token slot.
     if (arg == "-C" || arg == "--context") {
       if (i + 1 >= argc) {
         printError("-C requires a number");
@@ -45,6 +50,7 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
       }
 
       try {
+        // Advance loop index to consume the numerical value token.
         options.context = std::stoi(argv[++i]);
 
         if (options.context < 0) {
@@ -59,11 +65,14 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
       continue;
     }
 
+    // Reject unrecognized flag options starting with a hyphen.
     if (!arg.empty() && arg[0] == '-') {
       printError("unknown option: " + arg);
       return std::nullopt;
     }
 
+    // Positional argument handling: first non-option token is target pattern,
+    // subsequent positional tokens are target file/directory paths.
     if (options.pattern.empty()) {
       options.pattern = arg;
     } else {
@@ -71,6 +80,7 @@ std::optional<CliOptions> Cli::parse(int argc, char *argv[]) {
     }
   }
 
+  // Validate required positional parameters prior to completing parse step.
   if (options.pattern.empty()) {
     printError("no search pattern provided");
     return std::nullopt;
